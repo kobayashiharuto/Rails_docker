@@ -1,36 +1,42 @@
-FROM ruby:2.7.2
+FROM ruby:2.6.5-alpine3.11
 
-ENV LANG C.UTF-8
-ENV APP_ROOT /app
+ENV ROOT="/myapp"
+ENV LANG=C.UTF-8
+ENV TZ=Asia/Tokyo
 
-# install required libraries
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-  echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
-  apt-get update -qq && \
-  apt-get install -y --no-install-recommends \
-  build-essential \
+WORKDIR ${ROOT}
+
+RUN apk update && \
+  apk upgrade && \
+  apk add --no-cache \
+  gcc \
+  g++ \
+  libc-dev \
+  libxml2-dev \
+  linux-headers \
+  make \
   nodejs \
+  postgresql \
+  postgresql-dev \
+  tzdata \
   yarn && \
-  apt-get clean && \
-  rm --recursive --force /var/lib/apt/lists/*
+  apk add --virtual build-packs --no-cache \
+  build-base \
+  curl-dev
 
-# create working directory
-RUN mkdir $APP_ROOT
-WORKDIR $APP_ROOT
+COPY Gemfile ${ROOT}
+COPY Gemfile.lock ${ROOT}
 
-# bundle install
-COPY Gemfile $APP_ROOT/Gemfile
-COPY Gemfile.lock $APP_ROOT/Gemfile.lock
-RUN bundle install --jobs 4 --retry 3
+RUN bundle install
+RUN apk del build-packs
 
-# create app in container
-COPY . $APP_ROOT
+COPY . ${ROOT}
 
-# script to be executed every time the container starts
+# Add a script to be executed every time the container starts.
 COPY entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh
 ENTRYPOINT ["entrypoint.sh"]
 EXPOSE 3000
 
-# Start the main process
+# Start the main process.
 CMD ["rails", "server", "-b", "0.0.0.0"]
