@@ -3,7 +3,7 @@ ENV LANG C.UTF-8
 
 RUN apt-get update -qq && apt-get install -y \
   build-essential \
-  mysql-client \
+  default-mysql-client \
   nodejs \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
