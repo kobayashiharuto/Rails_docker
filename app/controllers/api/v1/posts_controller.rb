@@ -12,8 +12,8 @@ class Api::V1::PostsController < ApplicationController
   end
 
   def create
-    article = Article.new(post_params)
-    if post.save
+    article = Article.new(article_params)
+    if article.save
       render json: { status: 'SUCCESS', data: article }
     else
       render json: { status: 'ERROR', data: article.errors }
@@ -26,7 +26,7 @@ class Api::V1::PostsController < ApplicationController
   end
 
   def update
-    if @article.update(post_params)
+    if @article.update(article_params)
       render json: { status: 'SUCCESS', message: 'Updated the post', data: @article }
     else
       render json: { status: 'SUCCESS', message: 'Not updated', data: @article.errors }
@@ -39,7 +39,7 @@ class Api::V1::PostsController < ApplicationController
     @article = Article.find(params[:id])
   end
 
-  def post_params
-    params.require(:post).permit(:title)
+  def article_params
+    params.require(:article).permit(:title)
   end
 end
